@@ -93,7 +93,7 @@ class Blockchain(object):
     @staticmethod
     def valid_proof(last_proof, proof):
         """
-        Validates the Proof:  Does hash(last_proof, proof) contain 4
+        Validates the Proof:  Does hash(last_proof, proof) contain 6
         leading zeroes?
         """
         guess = f'{last_proof}{proof}'.encode()
@@ -142,6 +142,27 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
+    values = request.get_json()
+
+     # Check that the required fields are in the POST'ed data
+    required = ['proof', 'last_proof']
+    if not all(k in values for k in required):
+        return 'Missing Values', 400
+
+    # use valid_proof to validate the client's proof
+    validated = blockchain.valid_proof(values['last_proof'], values['proof'])
+
+    if validated:
+        # if the proof of the last block is still equal to the last proof sent
+        if values['last_proof'] == blockchain.last_block['proof']:
+            # add block to chain
+            previous_hash = blockchain.hash(last_block)
+            block = blockchain.new_block(proof, previous_hash)
+            # send a success message
+            # send a reward
+        # else send a failure message
+    # else send a message that it's not validated
+
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
     last_proof = last_block['proof']
@@ -200,7 +221,7 @@ def full_chain():
 def last_proof():
     # get the last index of blockchain.chain
     response = {
-        'proof': blockchain.chain[len(blockchain.chain) - 1]['proof']
+        'proof': blockchain.last_block['proof']
     }
 
     return jsonify(response), 200
