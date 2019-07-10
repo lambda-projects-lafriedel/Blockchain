@@ -10,9 +10,10 @@ class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.current_transactions = []
-        self.nodes = set()
+        self.nodes = set() # Other servers running the same Blockchain
 
-        self.new_block(previous_hash=1, proof=100)
+        # Create the genesis block
+        self.new_block(previous_hash=1, proof=99)
 
     def new_block(self, proof, previous_hash=None):
         """
@@ -47,6 +48,7 @@ class Blockchain(object):
         :return: <int> The index of the BLock that will hold this transaction
         """
 
+        # Adding a new transaction to the list of transactions
         self.current_transactions.append({
             'sender': sender,
             'recipient': recipient,
@@ -70,6 +72,7 @@ class Blockchain(object):
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
+    # this allows you to access the method as a property -- what does this mean?
     @property
     def last_block(self):
         return self.chain[-1]
@@ -96,6 +99,7 @@ class Blockchain(object):
     def valid_chain(self, chain):
         """
         Determine if a given blockchain is valid
+        Notes: To check if it's valid, you can check all the previous hashes...can also check if the proof of work is correct
 
         :param chain: <list> A blockchain
         :return: <bool> True if valid, False if not
@@ -179,7 +183,8 @@ def new_transaction():
 @app.route('/chain', methods=['GET'])
 def full_chain():
     response = {
-        # TODO: Return the chain and its current length
+        'chain': blockchain.chain,
+        'length': len(blockchain.chain)
     }
     return jsonify(response), 200
 
