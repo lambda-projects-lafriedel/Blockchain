@@ -53,6 +53,7 @@ class Blockchain(object):
         self.current_transactions = []
 
         self.chain.append(block)
+        self.broadcast_new_block(block)
         return block
 
     def new_transaction(self, sender, recipient, amount):
@@ -150,6 +151,7 @@ class Blockchain(object):
         Add a new node to the list of nodes
         :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
         :return: None
+        Notes: Including this publicly would be a huge security risk, because anyone could register themselves
         """
 
         parsed_url = urlparse(address)
@@ -188,6 +190,21 @@ class Blockchain(object):
             return True
 
         return False
+
+    def broadcast_new_block(self, block):
+        '''
+        Alert all registered nodes that a new block has been mined
+        block = Block (that has been mined and added to chain)
+        '''
+
+        data = {'block': block}
+
+        for node in self.nodes:
+            r = requests.post(f'http://{node}/block/new', json=data)
+
+            if r.status_code is not 200:
+                # TODO: Error handling
+                pass
 
 
 # Instantiate our Node
@@ -273,6 +290,30 @@ def last_proof():
     return jsonify(response), 200
 
 
+@app.route('/block/new', methods=['POST'])
+def new_block():
+    values = request.get_json()
+
+    required = ['block']
+
+    if not all(k in values for k in required):
+        return 'Missing Values', 400
+
+    # TODO: Validate that sender is an approved peer node
+    new_block = values['block']
+    last_block = blockchain.last_block
+
+    # Make sure the index is exactly one greater than current last block
+    if new_block['index'] == last_block['index'] + 1:
+        # Make sure the block's last hash matches the hash of the last block
+        if new_block['previous_hash'] == blockchain.hash(last_block):
+            # Validate the proof in the new block
+            if blockchain.valid_proof(last_block['proof'], new_block['proof']):
+                blockchain.chain.append(new_block)
+                return 'Block Accepted', 200
+    
+    return 'Block Rejected', 200
+                
 # Post body as JSON to add node
 # {
 # 	"nodes": ["http://localhost:5001"]
