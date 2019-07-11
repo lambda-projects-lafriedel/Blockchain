@@ -16,7 +16,21 @@ class Blockchain(object):
         self.current_transactions = []
         self.nodes = set()
 
-        self.new_block(previous_hash=1, proof=100)
+        self.create_genesis_block()
+    
+    def create_genesis_block(self):
+        '''
+        Create genesis block and add it to the chain. The genesis block is the anchor of the chain. It must be identical for all nodes, or consensus will fail. It is normally hardcoded.
+        '''
+        block = {
+            'index': 1,
+            'timestamp': 0,
+            'transactions': [],
+            'proof': 99,
+            'previous_hash': 1,
+        }
+
+        self.chain.append(block)
 
     def new_block(self, proof, previous_hash=None):
         """
