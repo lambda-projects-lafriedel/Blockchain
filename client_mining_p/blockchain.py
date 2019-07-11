@@ -143,42 +143,40 @@ blockchain = Blockchain()
 @app.route('/mine', methods=['POST']) # changed from GET to POST
 def mine():
     values = request.get_json()
-
+    print("VALUES", values)
      # Check that the required fields are in the POST'ed data
-    required = ['proof', 'last_proof', 'sender']
+    required = ['proof']
     if not all(k in values for k in required):
         return 'Missing Values', 400
 
     # use valid_proof to validate the client's proof
-    validated = blockchain.valid_proof(values['last_proof'], values['proof'])
+    validated = blockchain.valid_proof(blockchain.last_block['proof'], values['proof'])
 
     if validated:
         # if the proof of the last block is still equal to the last proof sent
-        if values['last_proof'] == blockchain.last_block['proof']:
-            # create transaction for the reward
-            blockchain.new_transaction(
-                sender=node_identifier,
-                recipient=values['sender'],
-                amount=1,
-            )
-            # add block to chain
-            previous_hash = blockchain.hash(blockchain.last_block)
-            block = blockchain.new_block(values['proof'], previous_hash)
-            # send a success message
-            response = {
-                'message': 'success',
-                'index': block['index'],
-                'transactions': block['transactions'],
-                'proof': block['proof'],
-                'previous_hash': block['previous_hash'],
-            }
+        # if values['last_proof'] == blockchain.last_block['proof']:
+        # create transaction for the reward
+        blockchain.new_transaction(
+            sender='0',
+            recipient=node_identifier,
+            amount=1,
+        )
+        # add block to chain
+        previous_hash = blockchain.hash(blockchain.last_block)
+        block = blockchain.new_block(values['proof'], previous_hash)
+        # send a success message
+        # response = {
+        #     'message': 'success',
+        #     'index': block['index'],
+        #     'transactions': block['transactions'],
+        #     'proof': block['proof'],
+        #     'previous_hash': block['previous_hash'],
+        # }
 
-            return jsonify(response), 200
-        else:
-            return 'ERROR: Last proof has changed', 400
+        return jsonify(message='New Block Forged'), 200
        
     # else send a message that it's not validated
-    return 'Proof Rejected', 400
+    return jsonify(message='Error, proof not validated or proof has changed'), 400
 
     # # We run the proof of work algorithm to get the next proof...
     # last_block = blockchain.last_block
