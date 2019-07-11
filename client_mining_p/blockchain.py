@@ -154,7 +154,7 @@ def mine():
         return jsonify(message='New Block Forged'), 200
        
     # else send a message that it's not validated
-    return jsonify(message='Error, proof not validated or proof has changed'), 400
+    return jsonify(message='Error, proof not validated or proof has changed'), 200
 
 
 @app.route('/transactions/new', methods=['POST'])

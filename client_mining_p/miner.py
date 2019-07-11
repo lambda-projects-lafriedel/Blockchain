@@ -39,12 +39,12 @@ if __name__ == '__main__':
     # Run forever until interrupted
     while True:
         # Get the last proof from the server and look for a new one
-        proof = requests.get('http://localhost:5000/last_proof')
+        proof = requests.get(url=node + '/last_proof')
         new_proof = proof_of_work(proof.json()['proof'])
 
         # When found, POST it to the server {"proof": new_proof}
         data = {'proof': new_proof}
-        attempt = requests.post('http://localhost:5000/mine',json=data)
+        attempt = requests.post(url=node + '/mine',json=data)
         # If the server responds with 'New Block Forged'
         if attempt.json()['message'] == 'New Block Forged':
             # add 1 to the number of coins mined and print it.
