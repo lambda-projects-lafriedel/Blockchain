@@ -302,7 +302,7 @@ def new_block():
     new_block = values.get('block')
     old_block = blockchain.last_block
     print('new block received', file=sys.stderr)
-    print('with index' + str(new_block.get('index: ')), file=sys.stderr)
+    print('with index' + str(new_block.get('index')), file=sys.stderr)
     if new_block.get('index') == old_block.get('index') + 1:
         # Verify the block by making sure the previous hash matches
         print('and has the correct index', file=sys.stderr)
