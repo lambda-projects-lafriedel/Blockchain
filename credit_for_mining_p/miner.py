@@ -2,6 +2,19 @@ import hashlib
 import requests
 
 import sys
+import os.path
+from uuid import uuid4
+
+# check for existence of my_id
+def retrieve_id():
+    if os.path.exists('my_id.txt'):
+        with open('my_id.txt') as f:
+            my_id = f.read()
+            f.close()
+            return my_id
+    else:
+        return str(uuid4()).replace('-', '')
+
 
 
 def proof_of_work(last_proof):
@@ -12,12 +25,12 @@ def proof_of_work(last_proof):
     - p is the previous proof, and p' is the new proof
     """
 
-    print("Searching for next proof")
+    print("\nSearching for next proof\n")
     proof = 0
     while valid_proof(last_proof, proof) is False:
         proof += 1
 
-    print("Proof found: " + str(proof))
+    print("\nProof found: " + str(proof))
     return proof
 
 
@@ -39,6 +52,10 @@ if __name__ == '__main__':
         node = "http://localhost:5000"
 
     coins_mined = 0
+
+    # Generate unique ID
+    my_id = retrieve_id()
+
     # Run forever until interrupted
     while True:
         # Get the last proof from the server
@@ -46,7 +63,7 @@ if __name__ == '__main__':
         data = r.json()
         new_proof = proof_of_work(data.get('proof'))
 
-        post_data = {"proof": new_proof}
+        post_data = {"proof": new_proof, "id": my_id}
 
         r = requests.post(url=node + "/mine", json=post_data)
         data = r.json()
